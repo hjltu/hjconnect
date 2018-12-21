@@ -84,7 +84,7 @@ def my_stat():
     "uptime": mylib.get_uptime(), \
     "time": int(time.time()), \
     "timestr": time.ctime()}
-    #pulse_lib.my_log(__file__,'status: '+str(payload))
+    #mylib.my_log(__file__,'status: '+str(payload))
     rclient.publish(TOPIC+"/out/status", mylib.my_json(payload))
     th=threading.Timer(99,my_stat) # interval
     th.daemon=True
