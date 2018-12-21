@@ -140,11 +140,7 @@ def run_rclient(arg=None):
     if arg == '-l':
         rclient.connect("localhost",1883,60)
     else:
-        #rclient.username_pw_set("admin", "public")
-        #rclient.tls_set("/etc/ssl/certs/q.pulses.ai.pem", None, None, cert_reqs=ssl.CERT_NONE, tls_version=ssl.PROTOCOL_TLSv1_2 )
-        #rclient.tls_insecure_set(True)
-        #rclient.connect("q.pulses.ai",443)
-        rclient.connect("79.110.246.131",18830,60)
+        rclient.connect("test.mosquitto.org",1883,60)
     rclient.on_connect = r_connect
     rclient.on_message = r_message
     rclient.loop_forever()
