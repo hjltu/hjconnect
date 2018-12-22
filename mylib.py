@@ -14,8 +14,8 @@ import base64
 import hashlib
 
 # log2mqtt
-import socket, ssl
-import mqtthandler
+#import socket, ssl
+#import mqtthandler
 
 def my_json(payload):
     return json.dumps(payload)  # object2string
