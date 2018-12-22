@@ -125,7 +125,7 @@ def my_log(msg,show=0):
     mytime = time.strftime("%d-%b-%y_%H:%M:%S")
     try:
         with open(logdir + "/" + mydate + ".txt", "a") as f:
-            f.write(mytime + msg + "\n")
+            f.write(mytime + "\t" + msg + "\n")
     except Exception as e:
         print(e)
         return
