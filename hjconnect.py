@@ -116,7 +116,7 @@ def run_lclient():
 ### remote client ###
 
 def r_connect(client, userdata, flags, rc):
-    mylib.my_log("OK Connected remote client with result code = "+str(rc),1)
+    mylib.my_log("Connected remote client with result code = "+str(rc),1)
     payload={"conn": True, \
     "uptime":mylib.get_uptime(), \
     "time": int(time.time()), \
