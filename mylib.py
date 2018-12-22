@@ -25,7 +25,7 @@ def get_serial():
             for line in f:
                 if 'Serial' in line:
                     return str(line[10:26])
-            return "NA"
+            return "SN"
     except Exception as e:
         return "ERR:" + str(e)
 
