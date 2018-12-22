@@ -91,12 +91,12 @@ def my_stat():
 ### local client ###
 
 def l_connect(client, userdata, flags, rc):
-    print("OK Connected with result code "+str(rc))
+    mylib.my_log("Connected local client with result code = "+str(rc),1)
     payload={"conn": True, \
     "uptime":mylib.get_uptime(), \
     "time": int(time.time()), \
     "timestr": time.ctime()}
-    mylib.my_log("Connect local client: " + str(payload),1)
+    mylib.my_log("Local client: " + str(payload),1)
     lclient.publish("/hjlocal/out/start", mylib.my_json(payload))
 
 def l_message(client, userdata, msg):
@@ -116,13 +116,13 @@ def run_lclient():
 ### remote client ###
 
 def r_connect(client, userdata, flags, rc):
-    print("OK Connected with result code "+str(rc))
+    mylib.my_log("OK Connected remote client with result code = "+str(rc),1)
     payload={"conn": True, \
     "uptime":mylib.get_uptime(), \
     "time": int(time.time()), \
     "id": DEVICE_ID, \
     "timestr": time.ctime()}
-    mylib.my_log(__file__,"Connect remote: " + str(payload),1)
+    mylib.my_log("Remote client: " + str(payload),1)
     rclient.publish(TOPIC+"/out/start", mylib.my_json(payload), qos=1, retain=True)
 
 def r_message(client, userdata, msg):
