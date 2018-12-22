@@ -8,14 +8,8 @@ import os, subprocess, json
 import urllib.request
 import psutil 
 import time, datetime
-#from datetime import timedelta
-import logging
 import base64
 import hashlib
-
-# log2mqtt
-#import socket, ssl
-#import mqtthandler
 
 def my_json(payload):
     return json.dumps(payload)  # object2string
@@ -31,7 +25,7 @@ def get_serial():
             for line in f:
                 if 'Serial' in line:
                     return str(line[10:26])
-            return "NoSerial"
+            return "NA"
     except Exception as e:
         return "ERR:" + str(e)
 
@@ -91,6 +85,7 @@ def get_cpu_usage():
         return "ERR:" + str(e)
 
 def get_ip_addr():
+    """ all ip addresses"""
     try:
         res=subprocess.check_output(['hostname','-I'])
         return res.decode('utf-8').replace(" \n","")
@@ -116,6 +111,27 @@ def set_time():
         return my_date
     except Exception as e:
         return "ERR:" + str(e)
+
+def my_log(msg,show=0):
+    logdir = "log"
+    try:
+        if not os.path.exists(logdir):
+            os.makedirs(logdir)
+    except:
+        return
+
+
+    mydate = datetime.date.today().strftime("%d-%b-%Y")
+    mytime = time.strftime("%d-%b-%y_%H:%M:%S")
+    try:
+        with open(logdir + "/" + mydate + ".txt", "a") as f:
+            f.write(mytime + msg + "\n")
+    except Exception as e:
+        print(e)
+        return
+
+    if show == 1:
+        print(msg)
 
 # check 'reboot' command with retain=True
 def my_retain_check(command,retain):

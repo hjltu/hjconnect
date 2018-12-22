@@ -30,14 +30,12 @@
 
 import os,sys,time
 import _thread,threading
-#import subprocess
 import paho.mqtt.client as mqtt
 #import socket, ssl
-#from datetime import timedelta
 import mylib
 
 
-VERSION = "19-Nov-18"
+VERSION = "22-Dec-18"
 
 DEVICE_ID = mylib.get_serial()
 PUBLIC_IP = mylib.get_public_ip()
@@ -66,11 +64,11 @@ def my_stat():
     time.sleep(3)
 #    if my_check_date() is False:
 #        global SET_DATE
-        #mylib.my_log(__file__,'try to set_date')
+#        mylib.my_log('try to set_date')
 #        SET_DATE = mylib.set_time()
     if my_check_ip() is False:
         global PUBLIC_IP
-        #mylib.my_log(__file__,'try to get public ip')
+        mylib.my_log('try to get public ip',1)
         PUBLIC_IP = mylib.get_public_ip()
     payload={"id": DEVICE_ID, \
     "memtotal": mylib.get_total_mem(), \
@@ -84,9 +82,9 @@ def my_stat():
     "uptime": mylib.get_uptime(), \
     "time": int(time.time()), \
     "timestr": time.ctime()}
-    #mylib.my_log(__file__,'status: '+str(payload))
+    mylib.my_log('status: '+str(payload),1)
     rclient.publish(TOPIC+"/out/status", mylib.my_json(payload))
-    th=threading.Timer(99,my_stat) # interval
+    th=threading.Timer(9,my_stat) # interval
     th.daemon=True
     th.start()
 
@@ -98,7 +96,7 @@ def l_connect(client, userdata, flags, rc):
     "uptime":mylib.get_uptime(), \
     "time": int(time.time()), \
     "timestr": time.ctime()}
-    #mylib.my_log(__file__,"Connect: " + str(payload))
+    mylib.my_log("Connect local client: " + str(payload),1)
     lclient.publish("/hjlocal/out/start", mylib.my_json(payload))
 
 def l_message(client, userdata, msg):
@@ -124,7 +122,7 @@ def r_connect(client, userdata, flags, rc):
     "time": int(time.time()), \
     "id": DEVICE_ID, \
     "timestr": time.ctime()}
-    #mylib.my_log(__file__,"Connect: " + str(payload))
+    mylib.my_log(__file__,"Connect remote: " + str(payload),1)
     rclient.publish(TOPIC+"/out/start", mylib.my_json(payload), qos=1, retain=True)
 
 def r_message(client, userdata, msg):
@@ -140,6 +138,10 @@ def run_rclient(arg=None):
     if arg == '-l':
         rclient.connect("localhost",1883,60)
     else:
+        #rclient.username_pw_set("admin", "public")
+        #rclient.tls_set("/etc/ssl/certs/mycert.pem", None, None, cert_reqs=ssl.CERT_NONE, tls_version=ssl.PROTOCOL_TLSv1_2 )
+        #rclient.tls_insecure_set(True)
+        #rclient.connect("myip",443)
         rclient.connect("test.mosquitto.org",1883,60)
     rclient.on_connect = r_connect
     rclient.on_message = r_message
