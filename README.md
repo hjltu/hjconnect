@@ -4,7 +4,7 @@ remote telemetry system for raspberry pi
 python3 hjconnect.py -l
 
 Start message example:
-/hjconnect/000000007d789969/out/start
+/hjconnect/000000007d789969/out/start<br>
 {<br>
   "id": "000000007d789969",<br>
   "conn": true,<br>
@@ -15,7 +15,7 @@ Start message example:
 }<br>
 
 Repeating message example:
-/hjconnect/000000007d789969/out/status 
+/hjconnect/000000007d789969/out/status <br>
 {<br>
   "memused": 152772608,<br>
   "cpuload": 0.2,<br>
