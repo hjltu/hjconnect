@@ -4,7 +4,15 @@ remote telemetry system for raspberry pi
 python3 hjconnect.py -l
 
 Start message example:
-/hjconnect/000000007d789969/out/start {"id": "000000007d789969", "conn": true, "time": 1545351737, "timestr": "2018-12-21 00:22:17", "uptime": "4 days, 16:32:16.560000"}
+/hjconnect/000000007d789969/out/start
+{<br>
+  "id": "000000007d789969",<br>
+  "conn": true,<br>
+  "time": 1545351737,<br>
+  "timestr": "2018-12-21 00:22:17",<br>
+  "uptime": "4 days,<br>
+  16:32:16.560000"<br>
+}<br>
 
 Repeating message example:
 /hjconnect/000000007d789969/out/status 
