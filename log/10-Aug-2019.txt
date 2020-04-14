@@ -1,0 +1,10 @@
+10-Aug-19_11:07:50	 * /home/pi/hjconnect/hjconnect.py * Connected local client with result code = 0
+10-Aug-19_11:07:50	 * /home/pi/hjconnect/lib/hjstat.py * local client: {'err': '', 'id': '00000000c6c99a95', 'conn': True, 'release': '21-jan-19', 'pid': 'NA', 'out': 'Connection: True', 'dir': 'NA', 'time': 1565435270, 'uptime': '48 days, 19:19:13.590000', 'in': '', 'gap': 399, 'timestr': 'Sat Aug 10 11:07:50 2019'}
+10-Aug-19_11:07:50	 * /home/pi/hjconnect/hjconnect.py * Connected remote client with result code = 0
+10-Aug-19_11:07:50	 * /home/pi/hjconnect/lib/hjstat.py * remote client: {'err': '', 'id': '00000000c6c99a95', 'conn': True, 'release': '21-jan-19', 'pid': 'NA', 'out': 'Connection: True', 'dir': 'NA', 'time': 1565435270, 'uptime': '48 days, 19:19:13.620000', 'in': '', 'gap': 399, 'timestr': 'Sat Aug 10 11:07:50 2019'}
+10-Aug-19_14:45:28	 * ./hjclient.py * Connected to /hjlocal with result code = 0
+10-Aug-19_14:46:07	 * /home/pi/hjconnect/hjconnect.py * Connected local client with result code = 0
+10-Aug-19_14:46:07	 * /home/pi/hjconnect/lib/hjstat.py * local client: {'conn': True, 'dir': 'NA', 'in': '', 'out': 'Connection: True', 'id': '00000000c6c99a95', 'timestr': 'Sat Aug 10 14:46:07 2019', 'gap': 399, 'uptime': '48 days, 22:57:30.970000', 'time': 1565448367, 'err': '', 'release': '21-jan-19', 'pid': 'NA'}
+10-Aug-19_14:46:07	 * /home/pi/hjconnect/hjconnect.py * Connected remote client with result code = 0
+10-Aug-19_14:46:07	 * /home/pi/hjconnect/lib/hjstat.py * remote client: {'conn': True, 'dir': 'NA', 'in': '', 'out': 'Connection: True', 'id': '00000000c6c99a95', 'timestr': 'Sat Aug 10 14:46:07 2019', 'gap': 399, 'uptime': '48 days, 22:57:31', 'time': 1565448367, 'err': '', 'release': '21-jan-19', 'pid': 'NA'}
+10-Aug-19_14:46:09	 * ./hjclient.py * Connected to /hjlocal with result code = 0

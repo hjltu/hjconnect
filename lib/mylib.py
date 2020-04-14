@@ -5,6 +5,7 @@
 """
 
 import os
+import sys
 import subprocess
 import json
 import urllib.request
@@ -13,10 +14,25 @@ import time
 import datetime
 import base64
 import hashlib
+import config
+
+
+NAME = " * "+__file__+" * "
 
 
 def my_json(payload):
     return json.dumps(payload)  # object2string
+
+
+def byte2dict(msg):
+    if type(msg) is bytes:
+        try:
+            msg = msg.decode()
+            msg = json.loads(msg)
+        except Exception as e:
+            msg = "ERR msg2json: "+str(e)
+            my_log(NAME+msg)
+    return msg
 
 
 def my_exit(err):
@@ -25,7 +41,7 @@ def my_exit(err):
 
 
 def get_serial():
-    # Extract serial from cpuinfo file for RaspberryPI
+    # Extract rpi serial from cpuinfo file
     try:
         with open('/proc/cpuinfo', 'r') as f:
             for line in f:
@@ -40,8 +56,7 @@ def get_uptime():
     try:
         with open('/proc/uptime', 'r') as f:
             uptime_seconds = float(f.readline().split()[0])
-            uptime = str(datetime.timedelta(seconds=uptime_seconds))
-            return uptime
+            return str(datetime.timedelta(seconds=uptime_seconds))
     except Exception as e:
         return "ERR:" + str(e)
 
@@ -57,9 +72,7 @@ def get_total_mem():
 def get_used_mem():
     try:
         ram = psutil.virtual_memory()
-        ram_used = ram.used  # / 2**20
-        # ram_percent_used = ram.percent
-        return ram_used
+        return ram.used
     except Exception as e:
         return "ERR:" + str(e)
 
@@ -67,8 +80,7 @@ def get_used_mem():
 def get_free_space():
     try:
         disk = psutil.disk_usage('/')
-        disk_free = disk.free  # / 2**30
-        return disk_free
+        return disk.free
     except Exception as e:
         return "ERR:" + str(e)
 
@@ -76,18 +88,18 @@ def get_free_space():
 def get_sd_size():
     try:
         disk = psutil.disk_usage('/')
-        disk_total = disk.total
-        return disk_total
+        return disk.total
     except Exception as e:
         return "ERR:" + str(e)
 
 
 def get_cpu_temp():
     try:
+        time.sleep(1)
         res = os.popen(
-            "vcgencmd measure_temp").readline().replace("\'C\n", "")
-        l = res.split('=')
-        return l[1]
+            "vcgencmd measure_temp 2>&1").readline().replace("\'C\n", "")
+        time.sleep(1)
+        return res.split('=')[1]
     except Exception as e:
         return "ERR:" + str(e)
 
@@ -118,46 +130,39 @@ def get_public_ip():
 
 
 def set_time():
+    # set UTC
     try:
         res = urllib.request.urlopen('https://now.httpbin.org')
         j = json.loads(res.read().decode('utf-8'))
         my_date = str(j['now']['rfc2822'])
-        # print(my_date[5:-4])
-        # set UTC time
-        # os.system('sudo date -s "%s"' % str(my_date[5:-4]).upper())
+        print(my_date[5:-4])
+        os.system('sudo date -s "%s"' % str(my_date[5:-4]).upper())
         return my_date
     except Exception as e:
         return "ERR:" + str(e)
 
 
-def my_log(msg, show=0):
-    logdir = "log"
-    try:
-        if not os.path.exists(logdir):
-            os.makedirs(logdir)
-    except:
-        return
-
-    mydate = datetime.date.today().strftime("%d-%b-%Y")
-    mytime = time.strftime("%d-%b-%y_%H:%M:%S")
-    try:
-        with open(logdir + "/" + mydate + ".txt", "a") as f:
-            f.write(mytime + "\t" + msg + "\n")
-    except Exception as e:
-        print(e)
-        return
-
-    if show == 1:
+def my_log(msg, add=0):
+    if config.VERBOSE == 1:
         print(msg)
-
-
-# check 'reboot' command with retain=True
-def my_retain_check(command, retain):
-    if retain is True:
-        status.my_log(__file__, 'ERR: ' + command + ' + retain')
-        return True
-    else:
-        return False
+    if add == 1:
+        logdir = "log"
+        # check log's directory
+        try:
+            if not os.path.exists(logdir):
+                os.makedirs(logdir)
+        except Exception as e:
+            print("ERR: "+str(e))
+            return
+        # add message to today's log file
+        mydate = datetime.date.today().strftime("%d-%b-%Y")
+        mytime = time.strftime("%d-%b-%y_%H:%M:%S")
+        try:
+            with open(logdir + "/" + mydate + ".txt", "a") as f:
+                f.write(mytime + "\t" + msg + "\n")
+        except Exception as e:
+            print(e)
+            return
 
 
 def bin2str_file(file):

@@ -1,31 +1,25 @@
 #!/usr/bin/env python3
 
 """
-    /start json:
-    "conn":     bool
-    "uptime":   int
-    "time":     int
-    "id":       str
-    "timestr":  str
+hjconnect.py
 
-    /status json:
-    "id":           str
-    "memtotal":     int
-    "memused":      int
-    "disktotal":    int
-    "diskfree":     int
-    "cputemp":
-    "cpuload":
-    "internalip":   str
-    "publicip":     str
-    "uptime":       str
-    "time":         int UTC
-    "timestr":      str UTC
+https://github.com/hjltu/hjconnect
+install: pip3 paho-mqtt psutils
+usage: python3 hjconnect.py
 
-    usage: python3 hjconnect.py [-l]
+* changelog:
+12-Nov-18 start working
+24-dec-18 status
+02-jan-19 add shell
+07-jan-19 add file transfer
 
-    changelog:
-    12-Nov-18 start working
+* ANSI codes
+ 17 http://www.lihaoyi.com/post/BuildyourownCommandLinewithANSIescapecodes.html
+
+* pep8
+pip install pep8
+pep8 --show-source --show-pep8 testfile.py
+
 """
 
 import os
@@ -34,94 +28,71 @@ import time
 import _thread
 import threading
 import paho.mqtt.client as mqtt
-import mylib
+# encription
+import socket
+import ssl
 
+from lib import mylib
+from lib import hjstat
+from lib import hjshell
 
-VERSION = "22-Dec-18"
-DEVICE_ID = mylib.get_serial()
-PUBLIC_IP = mylib.get_public_ip()
-# SET_DATE = mylib.set_time()
-TOPIC = "/hjconnect/"+DEVICE_ID
+import inspect
+current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+parent_dir = os.path.dirname(current_dir)
+sys.path.insert(0, parent_dir)
+from config.hjhome import VERSION, CONN_LTOPIC, CONN_RTOPIC, CONN_GAP, \
+    CONN_REMOTE_SERVER, MQTT_SERVER, CONN_REMOTE_PORT, CONN_LOCAL_PORT, \
+    CONN_ENCRYPTION, CONN_CA_CRT
+from setup.rpi_serial import serial as SERIAL
 
+CRT = "../config/" + CONN_CA_CRT
+NAME = " * "+__file__+" * "
+RTOPIC = CONN_RTOPIC + SERIAL
 
-def my_check_date():
-    if 'ERR' in SET_DATE:
-        return False
-    else:
-        return True
-
-
-def my_check_ip():
-    if 'ERR' in PUBLIC_IP:
-        return False
-    else:
-        return True
-
-
-def l_event(top, msg):
-    print("local event", top, msg)
-
-
-def r_event(top, msg):
-    print("remote event", top, msg)
+def event(client, top, msg):
+    """
+    handling message from client
+    """
+    for msg in hjshell.my_command(top, msg):
+        if client == "local":
+            mylib.my_log(NAME+"local event "+str(msg))
+            top = CONN_LTOPIC+"/out"
+            lclient.publish(top, mylib.my_json(msg))
+        if client == "remote":
+            mylib.my_log(NAME+"remote event"+str(msg))
+            top = RTOPIC + "/out"
+            rclient.publish(top, mylib.my_json(msg))
 
 
 def my_stat():
+    """
+    RPI status, GAP is period
+    """
     time.sleep(3)
-    """
-    if my_check_date() is False:
-        global SET_DATE
-        mylib.my_log('try to set_date')
-        SET_DATE = mylib.set_time()
-    """
-    if my_check_ip() is False:
-        global PUBLIC_IP
-        mylib.my_log('try to get public ip', 1)
-        PUBLIC_IP = mylib.get_public_ip()
-    payload = {
-        "id": DEVICE_ID,
-        "memtotal": mylib.get_total_mem(),
-        "memused": mylib.get_used_mem(),
-        "disktotal": mylib.get_sd_size(),
-        "diskfree": mylib.get_free_space(),
-        "cputemp": mylib.get_cpu_temp(),
-        "cpuload": mylib.get_cpu_usage(),
-        "internalip": mylib.get_ip_addr(),
-        "publicip": PUBLIC_IP,
-        "uptime": mylib.get_uptime(),
-        "time": int(time.time()),
-        "timestr": time.ctime()}
-    mylib.my_log('status: '+str(payload), 1)
-    rclient.publish(TOPIC+"/out/status", mylib.my_json(payload))
-    th = threading.Timer(9, my_stat)   # interval
+    payload = hjstat.my_stat()
+    rclient.publish(RTOPIC + "/out/status", mylib.my_json(payload))
+    th = threading.Timer(CONN_GAP, my_stat)
     th.daemon = True
     th.start()
 
 
 # local client
 def l_connect(client, userdata, flags, rc):
-    mylib.my_log("Connected local client with result code = "+str(rc), 1)
-    payload = {
-        "conn": True,
-        "uptime": mylib.get_uptime(),
-        "time": int(time.time()),
-        "timestr": time.ctime()}
-    mylib.my_log("Local client: " + str(payload), 1)
-    lclient.publish("/hjlocal/out/start", mylib.my_json(payload))
+    mylib.my_log(
+        NAME+"Connected local client with result code = "+str(rc), 1)
+    payload = hjstat.my_connect(client="local", conn=True, log=1)
+    lclient.publish(CONN_LTOPIC+"/out/start", mylib.my_json(payload))
+    lclient.subscribe(CONN_LTOPIC+"/in/#")
 
 
 def l_message(client, userdata, msg):
-    _thread.start_new_thread(l_event, (msg.topic, msg.payload,))
+    _thread.start_new_thread(event, ("local", msg.topic, msg.payload,))
 
 
 def run_lclient():
-    payload = {
-        "conn": False,
-        "uptime": mylib.get_uptime(),
-        "time": int(time.time()),
-        "timestr": time.ctime()}
-    lclient.will_set("/hjlocal/out/start", mylib.my_json(payload))
-    lclient.connect("localhost", 1883, 60)
+    payload = hjstat.my_connect(client="local", conn=False, log=0)
+    lclient.will_set(CONN_LTOPIC+"/out/start", mylib.my_json(payload))
+    lclient.connect(MQTT_SERVER, CONN_LOCAL_PORT, 60)
     lclient.on_connect = l_connect
     lclient.on_message = l_message
     lclient.loop_forever()
@@ -129,35 +100,30 @@ def run_lclient():
 
 # remote client
 def r_connect(client, userdata, flags, rc):
-    mylib.my_log("Connected remote client with result code = "+str(rc), 1)
-    payload = {
-        "conn": True,
-        "uptime": mylib.get_uptime(),
-        "time": int(time.time()),
-        "id": DEVICE_ID,
-        "timestr": time.ctime()}
-    mylib.my_log("Remote client: " + str(payload), 1)
+    mylib.my_log(
+        NAME + "Connected remote client with result code = " + str(rc), 1)
+    payload = hjstat.my_connect(client="remote", conn=True, log=1)
     rclient.publish(
-        TOPIC+"/out/start", mylib.my_json(payload), qos=1, retain=True)
+        RTOPIC + "/out/start",
+        mylib.my_json(payload),
+        qos=1, retain=True)
+    rclient.subscribe(RTOPIC + "/in/#")
 
 
 def r_message(client, userdata, msg):
-    _thread.start_new_thread(r_event, (msg.topic, msg.payload,))
+    _thread.start_new_thread(event, ("remote", msg.topic, msg.payload,))
 
 
 def run_rclient(arg=None):
-    payload = {
-        "conn": False,
-        "uptime": mylib.get_uptime(),
-        "time": int(time.time()),
-        "id": DEVICE_ID,
-        "timestr": time.ctime()}
+    payload = hjstat.my_connect(client="remote", conn=False, log=0)
     rclient.will_set(
-        TOPIC+"/out/start", mylib.my_json(payload), qos=1, retain=True)
-    if arg == '-l':
-        rclient.connect("localhost", 1883, 60)
-    else:
-        rclient.connect("test.mosquitto.org", 1883, 60)
+        RTOPIC + "/out/start",
+        mylib.my_json(payload),
+        qos=1, retain=True)
+    if CONN_ENCRYPTION:
+        rclient.tls_set(CRT, tls_version=ssl.PROTOCOL_TLSv1_2)
+        rclient.tls_insecure_set(True)
+    rclient.connect(CONN_REMOTE_SERVER, CONN_REMOTE_PORT)
     rclient.on_connect = r_connect
     rclient.on_message = r_message
     rclient.loop_forever()
@@ -168,14 +134,13 @@ def main(arg=None):
         print(__doc__)
         return 0
     threading.Thread(target=run_lclient).start()
-    threading.Thread(target=run_rclient, args=(arg,)).start()
+    threading.Thread(target=run_rclient).start()
     _thread.start_new_thread(my_stat, ())
 
-
 if __name__ == "__main__":
+    mylib.my_log(
+        NAME+"Start "+VERSION+" subtopics: "+CONN_LTOPIC+"/in/# " +
+        RTOPIC+"/in/# (shell,action)")
     rclient = mqtt.Client()     # remote
     lclient = mqtt.Client()     # local
-    if len(sys.argv) == 2:
-        main(sys.argv[1])
-    else:
-        main()
+    main()
