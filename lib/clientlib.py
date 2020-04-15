@@ -10,8 +10,12 @@ from . import mysend
 from . import myreceive
 from . import mylib
 
+import inspect
+current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+parent_dir = os.path.dirname(current_dir)
+sys.path.insert(0, parent_dir)
+from config.hjhome import CONN_CHUNKSIZE
 
-CHUNKSIZE = config.CHUNKSIZE
 NAME = " * "+__file__+" * "
 
 
@@ -57,7 +61,7 @@ def in_command(comm):
             "file": myfile,
             "dir": mypath,
             "chunknumber": 0,
-            "chunksize": CHUNKSIZE}
+            "chunksize": CONN_CHUNKSIZE}
         if comm[0] == "upload":
             return mysend.my_send(payload)
         if comm[0] == "download":

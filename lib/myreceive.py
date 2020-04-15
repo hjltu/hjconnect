@@ -31,9 +31,14 @@ import hashlib
 import config
 from . import mylib
 
+import inspect
+current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+parent_dir = os.path.dirname(current_dir)
+sys.path.insert(0, parent_dir)
+from config.hjhome import CONN_TMPDIR
 
 NAME = " * "+__file__+" * "
-TMPDIR = config.TMPDIR
+TMPDIR = CONN_TMPDIR
 
 
 def my_file_end(msg):

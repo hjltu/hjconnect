@@ -28,7 +28,6 @@ import time
 import _thread
 import threading
 import paho.mqtt.client as mqtt
-# encription
 import socket
 import ssl
 
