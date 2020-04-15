@@ -25,16 +25,13 @@ mosquitto_pub -t /hjlocal/in -m \
 '{"in":"upload","time":1234567,"file":"test.txt","dir":"tmp","data":"","hash":"d8e8fca2dc0f896fd7cb4cb0031ba249","end":true}'
 """
 
-import os
+import os, sys
 import base64
 import hashlib
 import config
 from . import mylib
 
-import inspect
-current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-parent_dir = os.path.dirname(current_dir)
-sys.path.insert(0, parent_dir)
+sys.path.append("/root")
 from config.hjhome import CONN_TMPDIR
 
 NAME = " * "+__file__+" * "

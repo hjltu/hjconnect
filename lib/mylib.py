@@ -14,8 +14,9 @@ import time
 import datetime
 import base64
 import hashlib
-import config
 
+sys.path.append("/root")
+from config.hjhome import CONN_VERBOSE
 
 NAME = " * "+__file__+" * "
 
@@ -114,7 +115,7 @@ def get_cpu_usage():
 def get_ip_addr():
     """ all ip addresses"""
     try:
-        res = subprocess.check_output(['hostname', '-I'])
+        res = subprocess.check_output(['hostname', '-i'])
         return res.decode('utf-8').replace(" \n", "")
     except Exception as e:
         return "ERR:" + str(e)
@@ -143,7 +144,7 @@ def set_time():
 
 
 def my_log(msg, add=0):
-    if config.VERBOSE == 1:
+    if CONN_VERBOSE:
         print(msg)
     if add == 1:
         logdir = "log"

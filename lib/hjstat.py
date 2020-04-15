@@ -29,18 +29,15 @@ hjstat
 
 """
 
+import sys
 import time
-import config
 from . import mylib
+sys.path.append("/root")
+from config.hjhome import CONN_GAP, VERSION
 
 
 DEVICE_ID = mylib.get_serial()
 PUBLIC_IP = mylib.get_public_ip()
-# set time to UTC
-# SET_DATE = mylib.set_time()
-# interval
-GAP = config.GAP
-RELEASE = config.RELEASE
 NAME = " * "+__file__+" * "
 
 
@@ -57,8 +54,8 @@ def my_stat():
     # rpi status message
     payload = {
         "id": DEVICE_ID,
-        "gap": GAP,
-        "release": RELEASE,
+        "gap": CONN_GAP,
+        "release": VERSION,
         "memtotal": mylib.get_total_mem(),
         "memused": mylib.get_used_mem(),
         "disktotal": mylib.get_sd_size(),
@@ -78,10 +75,10 @@ def my_connect(client="Local", conn=False, log=0):
     payload = {
         "conn": conn,
         "id": DEVICE_ID,
-        "gap": GAP,
+        "gap": CONN_GAP,
         "err": "", "in": "", "dir": "NA", "pid": "NA",
         "out": "Connection: "+str(conn),
-        "release": RELEASE,
+        "release": VERSION,
         "uptime": mylib.get_uptime(),
         "time": int(time.time()),
         "timestr": time.ctime()}
