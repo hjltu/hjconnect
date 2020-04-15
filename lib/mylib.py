@@ -101,8 +101,10 @@ def get_cpu_temp():
             "vcgencmd measure_temp 2>&1").readline().replace("\'C\n", "")
         time.sleep(1)
         return res.split('=')[1]
-    except Exception as e:
-        return "ERR:" + str(e)
+    except:
+        res = os.popen(
+            "cat /sys/class/thermal/thermal_zone0/temp").readline().replace("\n", "")
+        return int(res)/1000
 
 
 def get_cpu_usage():
